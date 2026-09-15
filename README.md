@@ -1,0 +1,1 @@
+# padroes_opera-ao
