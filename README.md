@@ -1,44 +1,35 @@
-# Padrões de Projeto — Categoria: Operação
+# Interpreter — Calculadora de Expressões
 
-Trabalho acadêmico (UCSAL) para demonstração dos **padrões de projeto (design patterns) da categoria Operação**. Cada padrão é implementado como um mini-projeto Java que simula um problema do mundo real, e vive em sua própria branch — a `main` serve apenas como índice/documentação geral.
+## Conceito
 
-## Organização do repositório
+O **Interpreter** é um padrão de projeto comportamental (categoria Operação) que, dada uma **gramática simples**, define uma representação para suas regras (uma árvore de expressões) e um **interpretador** capaz de avaliar sentenças escritas nessa gramática. Cada regra da gramática vira uma classe: expressões **terminais** (não dependem de outras expressões) e expressões **não-terminais** (combinam o resultado de subexpressões).
 
-Não há um único código-fonte na `main`. Cada padrão estudado tem:
+## Problema simulado
 
-1. Uma **branch própria**, nomeada com o padrão em minúsculas (ex.: `template-method`, `state`, `strategy`, `command`, `interpreter`);
-2. Um **mini-projeto Java simples**, simulando um cenário real, sem uso de classes genéricas como `ClasseA`/`ClasseB`;
-3. Um **README.md próprio** (na raiz da branch) explicando:
-   - o conceito do padrão;
-   - o problema que ele resolve;
-   - como a implementação do mini-projeto aplica o padrão;
-   - trechos de código comentados quando necessário.
+Uma calculadora precisa avaliar expressões de texto com soma e subtração, como `"5 + 3 - 2"`. A gramática é mínima: números inteiros e os operadores `+` e `-`, lidos da esquerda para a direita.
 
-## Padrões cobertos
+Sem o Interpreter, essa avaliação viraria um parsing manual e imperativo (variáveis acumulando resultado enquanto percorre a string). Com o padrão, a expressão é transformada em uma **árvore de objetos**, onde cada nó sabe interpretar (avaliar) apenas a sua própria regra, e o resultado final emerge da combinação recursiva desses nós.
 
-| Padrão            | Branch            |
-|--------------------|-------------------|
-| Template Method    | `template-method` |
-| State              | `state`           |
-| Strategy           | `strategy`        |
-| Command            | `command`         |
-| Interpreter        | `interpreter`     |
+## Como o código aplica o padrão
 
-## Como navegar pelo projeto
+- [`Expressao`](src/Expressao.java) — interface que define o contrato `interpretar()`, comum a toda regra da gramática.
+- [`NumeroExpressao`](src/NumeroExpressao.java) — **expressão terminal**: representa um número literal, não depende de mais nada para ser interpretada.
+- [`SomaExpressao`](src/SomaExpressao.java) e [`SubtracaoExpressao`](src/SubtracaoExpressao.java) — **expressões não-terminais**: cada uma guarda duas subexpressões (esquerda/direita) e combina o resultado da interpretação de ambas.
+- [`InterpretadorExpressao`](src/InterpretadorExpressao.java) — o **contexto/parser**: recebe a frase em texto (ex.: `"5 + 3 - 2"`), separa os tokens e monta a árvore de `Expressao` correspondente, delegando a avaliação final a ela.
+- [`Main`](src/Main.java) — demonstra o interpretador avaliando algumas expressões de texto diferentes.
 
-Para ver a implementação e a explicação de um padrão específico, troque para a branch correspondente:
+## Como compilar e executar
 
 ```bash
-git checkout template-method
+cd src
+javac *.java
+java Main
 ```
 
-E leia o `README.md` daquela branch, que contém a explicação teórica e o código do mini-projeto.
+## Saída esperada
 
-## Requisitos gerais
-
-- Java 17+
-- Cada branch é um projeto Java independente (pode conter seu próprio `pom.xml`/`build.gradle` ou apenas classes soltas compiláveis via `javac`), com instruções de execução no respectivo README.
-
----
-
-Desenvolvido por Giovane Santiago e Beatriz Correia como atividade avaliativa — UCSAL.
+```
+"5 + 3 - 2" = 6
+"10 - 4 + 1" = 7
+"7" = 7
+```
