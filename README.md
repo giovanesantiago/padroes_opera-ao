@@ -1,44 +1,50 @@
-# Padrões de Projeto — Categoria: Operação
+# State — Lâmpada Inteligente
 
-Trabalho acadêmico (UCSAL) para demonstração dos **padrões de projeto (design patterns) da categoria Operação**. Cada padrão é implementado como um mini-projeto Java que simula um problema do mundo real, e vive em sua própria branch — a `main` serve apenas como índice/documentação geral.
+## Conceito
 
-## Organização do repositório
+O **State** é um padrão de projeto comportamental (categoria Operação) que permite que um objeto **altere seu comportamento quando seu estado interno muda**, dando a impressão de que o objeto mudou de classe. Em vez de concentrar `if/switch` sobre o estado atual espalhados pela classe, cada estado é modelado como uma classe própria, responsável por decidir como reagir e para qual estado transicionar.
 
-Não há um único código-fonte na `main`. Cada padrão estudado tem:
+O objeto principal (o **contexto**) apenas guarda uma referência ao estado atual e delega a ele toda a lógica de comportamento e transição.
 
-1. Uma **branch própria**, nomeada com o padrão em minúsculas (ex.: `template-method`, `state`, `strategy`, `command`, `interpreter`);
-2. Um **mini-projeto Java simples**, simulando um cenário real, sem uso de classes genéricas como `ClasseA`/`ClasseB`;
-3. Um **README.md próprio** (na raiz da branch) explicando:
-   - o conceito do padrão;
-   - o problema que ele resolve;
-   - como a implementação do mini-projeto aplica o padrão;
-   - trechos de código comentados quando necessário.
+## Problema simulado
 
-## Padrões cobertos
+Uma lâmpada inteligente de automação residencial tem três estados possíveis:
 
-| Padrão            | Branch            |
-|--------------------|-------------------|
-| Template Method    | `template-method` |
-| State              | `state`           |
-| Strategy           | `strategy`        |
-| Command            | `command`         |
-| Interpreter        | `interpreter`     |
+- **Desligada** — ao pressionar o botão, liga em intensidade normal.
+- **Ligada** — ao pressionar o botão, entra em modo noturno (baixa intensidade).
+- **Modo Noturno** — ao pressionar o botão, desliga.
 
-## Como navegar pelo projeto
+O mesmo botão físico (`pressionarBotao()`) produz um efeito diferente dependendo do estado atual da lâmpada. Sem o State, isso exigiria uma variável de estado (enum/int) e um bloco de condicionais checando "se está desligada, faça X; se está ligada, faça Y..." dentro da própria classe `Lampada`, crescendo a cada novo estado.
 
-Para ver a implementação e a explicação de um padrão específico, troque para a branch correspondente:
+## Como o código aplica o padrão
+
+- [`EstadoLampada`](src/EstadoLampada.java) — interface que define o contrato de cada estado: `pressionarBotao(Lampada lampada)` e `descricao()`.
+- [`EstadoDesligada`](src/EstadoDesligada.java), [`EstadoLigada`](src/EstadoLigada.java), [`EstadoModoNoturno`](src/EstadoModoNoturno.java) — implementações concretas; cada uma sabe seu próprio comportamento e decide o próximo estado chamando `lampada.setEstado(...)`.
+- [`Lampada`](src/Lampada.java) — o **contexto**: mantém a referência ao `EstadoLampada` atual e delega `pressionarBotao()` a ele, sem conhecer as regras de transição.
+- [`Main`](src/Main.java) — demonstra o botão sendo pressionado repetidamente e a lâmpada ciclando entre os três estados.
+
+## Como compilar e executar
 
 ```bash
-git checkout template-method
+cd src
+javac *.java
+java Main
 ```
 
-E leia o `README.md` daquela branch, que contém a explicação teórica e o código do mini-projeto.
+## Saída esperada
 
-## Requisitos gerais
+```
+Estado atual: Desligada
+Lampada estava desligada -> ligando em intensidade normal.
 
-- Java 17+
-- Cada branch é um projeto Java independente (pode conter seu próprio `pom.xml`/`build.gradle` ou apenas classes soltas compiláveis via `javac`), com instruções de execução no respectivo README.
+Estado atual: Ligada
+Lampada estava ligada -> entrando em modo noturno.
 
----
+Estado atual: Modo Noturno
+Lampada estava em modo noturno -> desligando.
 
-Desenvolvido por Giovane Santiago e Beatriz Correia como atividade avaliativa — UCSAL.
+Estado atual: Desligada
+Lampada estava desligada -> ligando em intensidade normal.
+
+Estado final: Ligada
+```
