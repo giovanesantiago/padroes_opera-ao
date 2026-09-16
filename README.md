@@ -1,44 +1,45 @@
-# Padrões de Projeto — Categoria: Operação
+# Command — Controle Remoto de Automação Residencial
 
-Trabalho acadêmico (UCSAL) para demonstração dos **padrões de projeto (design patterns) da categoria Operação**. Cada padrão é implementado como um mini-projeto Java que simula um problema do mundo real, e vive em sua própria branch — a `main` serve apenas como índice/documentação geral.
+## Conceito
 
-## Organização do repositório
+O **Command** é um padrão de projeto comportamental (categoria Operação) que **encapsula uma solicitação como um objeto**. Isso permite parametrizar quem invoca a ação com diferentes comandos, enfileirar/logar execuções e, principalmente, suportar **desfazer** (undo) — já que o próprio comando sabe como reverter o que fez.
 
-Não há um único código-fonte na `main`. Cada padrão estudado tem:
+Três papéis ficam claros no padrão: o **invocador** (quem dispara o comando, sem saber o que ele faz), o **comando** (objeto que encapsula a ação e sabe como desfazê-la) e o **receptor** (o objeto real que sofre a ação).
 
-1. Uma **branch própria**, nomeada com o padrão em minúsculas (ex.: `template-method`, `state`, `strategy`, `command`, `interpreter`);
-2. Um **mini-projeto Java simples**, simulando um cenário real, sem uso de classes genéricas como `ClasseA`/`ClasseB`;
-3. Um **README.md próprio** (na raiz da branch) explicando:
-   - o conceito do padrão;
-   - o problema que ele resolve;
-   - como a implementação do mini-projeto aplica o padrão;
-   - trechos de código comentados quando necessário.
+## Problema simulado
 
-## Padrões cobertos
+Um controle remoto universal de automação residencial precisa acionar dispositivos diferentes (**Luz** e **Ar-condicionado**) sem conhecer os detalhes de cada um, e ainda permitir desfazer a última ação executada.
 
-| Padrão            | Branch            |
-|--------------------|-------------------|
-| Template Method    | `template-method` |
-| State              | `state`           |
-| Strategy           | `strategy`        |
-| Command            | `command`         |
-| Interpreter        | `interpreter`     |
+Sem o Command, o controle remoto precisaria de métodos específicos para cada dispositivo/ação (`ligarLuz()`, `desligarLuz()`, `ligarAr()`...) e uma lógica própria para saber como reverter cada uma. Com o padrão, cada ação vira um objeto `Comando` independente, e o controle só sabe executar e desfazer o último comando guardado.
 
-## Como navegar pelo projeto
+## Como o código aplica o padrão
 
-Para ver a implementação e a explicação de um padrão específico, troque para a branch correspondente:
+- [`Comando`](src/Comando.java) — interface que define o contrato `executar()` / `desfazer()`.
+- [`Luz`](src/Luz.java) e [`ArCondicionado`](src/ArCondicionado.java) — os **receptores**: dispositivos reais com `ligar()`/`desligar()`, sem qualquer conhecimento do padrão.
+- [`ComandoLigarLuz`](src/ComandoLigarLuz.java), [`ComandoDesligarLuz`](src/ComandoDesligarLuz.java), [`ComandoLigarAr`](src/ComandoLigarAr.java), [`ComandoDesligarAr`](src/ComandoDesligarAr.java) — **comandos concretos**: cada um encapsula uma ação sobre um receptor e sabe como revertê-la.
+- [`ControleRemoto`](src/ControleRemoto.java) — o **invocador**: executa o comando recebido em `pressionarBotao()` e guarda como último, permitindo desfazê-lo em `pressionarDesfazer()`, sem conhecer os dispositivos por trás.
+- [`Main`](src/Main.java) — demonstra ligar a luz, ligar o ar-condicionado, desligar a luz e depois desfazer a última ação (religando a luz).
+
+## Como compilar e executar
 
 ```bash
-git checkout template-method
+cd src
+javac *.java
+java Main
 ```
 
-E leia o `README.md` daquela branch, que contém a explicação teórica e o código do mini-projeto.
+## Saída esperada
 
-## Requisitos gerais
+```
+=== Ligando a luz ===
+Luz ligada.
 
-- Java 17+
-- Cada branch é um projeto Java independente (pode conter seu próprio `pom.xml`/`build.gradle` ou apenas classes soltas compiláveis via `javac`), com instruções de execução no respectivo README.
+=== Ligando o ar-condicionado ===
+Ar-condicionado ligado.
 
----
+=== Desligando a luz ===
+Luz desligada.
 
-Desenvolvido por Giovane Santiago e Beatriz Correia como atividade avaliativa — UCSAL.
+=== Desfazendo a ultima acao (deveria ligar a luz de novo) ===
+Luz ligada.
+```
